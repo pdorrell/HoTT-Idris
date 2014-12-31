@@ -4,4 +4,6 @@ The issue is that Idris has heterogeneous equality, and heterogeneous equality r
 
 `hott.idr` is the main file. It contains the definition of paths, fibers, equivalence, and univalence. `bad.idr` contains the contradiction.
 
+**UPDATE:** There's a second problem. We can prove rule K from Idris's pattern matching rules. This too is inconsistent with univalence. See the example in `k.idr`. This example doesn't even use heterogeneous equality.
+
 
