@@ -108,12 +108,21 @@ fiber_image (fiber f x p) = rhs p
 fiber_path : {f:a->b} -> (m:Fiber f y) -> f (fiber_value m) ~~ y
 fiber_path (fiber f x p) = p
 
+ap2dp : (f : a -> b) ->
+       (g : (x : a) -> f x ~~ y -> c) ->
+       (a1 : a) -> (b1 : f a1 ~~ y) ->
+       (a2 : a) -> (b2 : f a2 ~~ y) ->
+       (p : a1 ~~ a2) ->
+       (b1 ~~ ap f p @ b2) ->
+       (g a1 b1 ~~ g a2 b2)
+ap2dp f g a1 b1 a1 b2 refl q = ap (g a1) q
+
 fiber_eq  : (m1 : Fiber f y) -> (m2 : Fiber f y) ->
             (p : fiber_value m1 ~~ fiber_value m2) ->
             (fiber_path m1 ~~ ap f p @ fiber_path m2) ->
             (m1 ~~ m2)
-fiber_eq (fiber f x p) (fiber f x p) refl refl = refl
-
+fiber_eq (fiber f x1 p1) (fiber f x2 p2) q1 q2 =
+  ap2dp f (fiber f) x1 p1 x2 p2 q1 q2
 
 ------------------
 -- Equivalences --
