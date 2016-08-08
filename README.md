@@ -1,9 +1,5 @@
-A small, incomplete, and **inconsistent** formalization of homotopy type theory in Idris. This demonstrates that any attempt to formalize HoTT in Idris will be unsound under Idris's current handling of equality.
+A small, incomplete, and **inconsistent** formalization of homotopy type theory in Idris. This demonstrates that any attempt to formalize HoTT in Idris will be unsound under Idris's current pattern-matching rules.
 
-The issue is that Idris has heterogeneous equality, and heterogeneous equality rewriting, which allows us to prove that `True = False`. In HoTT, it is reasonable for `True = False` to be inhabited if `=` is heterogeneous. So the real issue is that the built-in `replace` function (and the `rewrite` tactic) handles heterogeneous paths as if they were homogeneous paths.
+The issue is that Idris has full dependent pattern matching, without the special restriction to avoid inconsistency with univalence. Using this, one can (and the Idris prelude does) define substitution by heterogeneous equality. This inconsistency with univalence is demonstrated in `bad.idr` by deriving a contradiction from a proof of `True = False`. More directly, it is possible to define rule K, as shown in `k.idr`.
 
-`hott.idr` is the main file. It contains the definition of paths, fibers, equivalence, and univalence. `bad.idr` contains the contradiction.
-
-**UPDATE:** There's a second problem. We can prove rule K from Idris's pattern matching rules. This too is inconsistent with univalence. See the example in `k.idr`. This example doesn't even use heterogeneous equality.
-
-
+`hott.idr` is the main file. It contains the definition of paths, fibers, equivalence, and univalence. `bad.idr` contains the contradiction. `k.idr` contains a definiton of rule K accepted by Idris.
