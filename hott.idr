@@ -22,20 +22,20 @@ symm : a ~~ b -> b ~~ a
 symm refl = refl
 
 
-infixl 50 @
-(@) : a ~~ b -> b ~~ c -> a ~~ c
-(@) refl p = p
+infixl 50 @-
+(@-) : a ~~ b -> b ~~ c -> a ~~ c
+(@-) refl p = p
 
 tran : a ~~ b -> b ~~ c -> a ~~ c
-tran = (@)
+tran = (@-)
 
-tran_assoc : (p:a~~b) -> (q:b~~c) -> (r:c~~d) -> (p@(q@r) ~~ (p@q)@r)
+tran_assoc : (p:a~~b) -> (q:b~~c) -> (r:c~~d) -> (p@-(q@-r) ~~ (p@-q)@-r)
 tran_assoc refl refl refl = refl
 
-tran_refl : (p:a~~b) -> (p ~~ p@refl)
+tran_refl : (p:a~~b) -> (p ~~ p@-refl)
 tran_refl refl = refl
 
-tran_symm : (p:a~~b) -> (q:b~~c) -> q ~~ symm p @ (p @ q)
+tran_symm : (p:a~~b) -> (q:b~~c) -> q ~~ symm p @- (p @- q)
 tran_symm refl q = refl
 
 ap : (f : t1 -> t2) -> a ~~ b -> f a ~~ f b
@@ -49,7 +49,7 @@ tr p q = rw (ap p q)
 
 
 tr_tran : (p:t->Type) -> (p1 : a ~~ b) -> (p2 : b ~~ c) -> (x : p a) ->
-          tr p p2 (tr p p1 x) ~~ (tr p (p1 @ p2) x)
+          tr p p2 (tr p p1 x) ~~ (tr p (p1 @- p2) x)
 tr_tran p refl refl x = refl
 
 apd : (t2:t1->Type) -> (f : (x:t1) -> t2 x) -> (p: a ~~ b)
@@ -60,18 +60,18 @@ funrefl : (f : t1 -> t2) -> (a:t1) -> (f a ~~ f a)
 funrefl f a = refl
 
 lemma_2_4_3 : (f:a->b) -> (g:a->b) -> (h : (x:a) -> f x ~~ g x) ->
-              (p:x1 ~~ x2) -> (h x1 @ ap g p ~~ ap f p @ h x2)
+              (p:x1 ~~ x2) -> (h x1 @- ap g p ~~ ap f p @- h x2)
 lemma_2_4_3 f g h refl = symm (tran_refl _)
 
 lemma_2_4_4 : {x:a} -> (f:a->a) -> (h : (x:a) -> f x ~~ x) -> h (f x) ~~ ap f (h x)
-lemma_2_4_4 {x} f h = part1 (h x) @ part2 (h x) (symm (h x)) @ part3 (h x)
-  where part1 : (p : f x ~~ x2) -> h (f x) ~~ h (f x) @ p @ symm p
-        part1 refl = tran_refl _ @ tran_refl _
+lemma_2_4_4 {x} f h = part1 (h x) @- part2 (h x) (symm (h x)) @- part3 (h x)
+  where part1 : (p : f x ~~ x2) -> h (f x) ~~ h (f x) @- p @- symm p
+        part1 refl = tran_refl _ @- tran_refl _
         part2 : (p : f x1 ~~ x2) -> (q:x2~~x3) ->
-                h (f x1) @ p @ q ~~ ap f p @ h x2 @ q
-        part2 refl q = ap (@ q) (symm (tran_refl _))
-        part3 : (p : f x ~~ x2) -> ap f (h x) @ p @ symm p ~~ ap f (h x)
-        part3 refl = symm (tran_refl _) @ symm (tran_refl _)
+                h (f x1) @- p @- q ~~ ap f p @- h x2 @- q
+        part2 refl q = ap (@- q) (symm (tran_refl _))
+        part3 : (p : f x ~~ x2) -> ap f (h x) @- p @- symm p ~~ ap f (h x)
+        part3 refl = symm (tran_refl _) @- symm (tran_refl _)
 
 
 ------------------------
@@ -113,13 +113,13 @@ ap2dp : (f : a -> b) ->
        (a1 : a) -> (b1 : f a1 ~~ y) ->
        (a2 : a) -> (b2 : f a2 ~~ y) ->
        (p : a1 ~~ a2) ->
-       (b1 ~~ ap f p @ b2) ->
+       (b1 ~~ ap f p @- b2) ->
        (g a1 b1 ~~ g a2 b2)
 ap2dp f g a1 b1 a1 b2 refl q = ap (g a1) q
 
 fiber_eq  : (m1 : Fiber f y) -> (m2 : Fiber f y) ->
             (p : fiber_value m1 ~~ fiber_value m2) ->
-            (fiber_path m1 ~~ ap f p @ fiber_path m2) ->
+            (fiber_path m1 ~~ ap f p @- fiber_path m2) ->
             (m1 ~~ m2)
 fiber_eq (fiber f x1 p1) (fiber f x2 p2) q1 q2 =
   ap2dp f (fiber f) x1 p1 x2 p2 q1 q2
@@ -184,26 +184,26 @@ iso_symm (iso f g gf fg) = iso g f fg gf
 iso_tran : Iso a b -> Iso b c -> Iso a c
 iso_tran (iso f1 g1 gf1 fg1) (iso f2 g2 gf2 fg2) =
   iso (f2 . f1) (g1 . g2) 
-      (\ x => ap g1 (gf2 (f1 x)) @ gf1 x)
-      (\ z => ap f2 (fg1 (g2 z)) @ fg2 z)
+      (\ x => ap g1 (gf2 (f1 x)) @- gf1 x)
+      (\ z => ap f2 (fg1 (g2 z)) @- fg2 z)
 
 iso_lemma1 : (f:a->b) -> (g:b->a) ->
              (gf:(x:a)->g(f x)~~x) -> (fg:(y:b)->f(g y)~~y) ->
              (x:a) -> (gf (g (f x))) ~~ ap g (ap f (gf x))
-iso_lemma1 f g gf fg x = lemma_2_4_4 (g . f) gf @ part1 (gf x)
+iso_lemma1 f g gf fg x = lemma_2_4_4 (g . f) gf @- part1 (gf x)
   where part1 : (p : x1 ~~ x2) -> ap (g . f) p ~~ ap g (ap f p)
         part1 refl = refl
         
 iso_fgfgf : (f:a->b) -> (g:b->a) ->
             (gf:(x:a)->g(f x)~~x) -> (fg:(y:b)->f(g y)~~y) -> (x:a) ->
-            (ap f (gf (g (f x))) @ fg (f x) ~~ fg (f (g (f x))) @ ap f (gf x))
-iso_fgfgf f g gf fg x = part1 @ part2
-  where part1 : ap f (gf (g (f x))) @ fg (f x) ~~ ap f(ap g(ap f(gf x))) @ fg (f x)
-        part1 = ap (\p => ap f p @ fg (f x)) (iso_lemma1 f g gf fg x)
+            (ap f (gf (g (f x))) @- fg (f x) ~~ fg (f (g (f x))) @- ap f (gf x))
+iso_fgfgf f g gf fg x = part1 @- part2
+  where part1 : ap f (gf (g (f x))) @- fg (f x) ~~ ap f(ap g(ap f(gf x))) @- fg (f x)
+        part1 = ap (\p => ap f p @- fg (f x)) (iso_lemma1 f g gf fg x)
         part2g : (y1:b) -> (y2:b) -> (p : f (g y1) ~~ y2) ->
-                 ap f (ap g p) @ fg y2 ~~ fg (f (g y1)) @ p
+                 ap f (ap g p) @- fg y2 ~~ fg (f (g y1)) @- p
         part2g y1 _ refl = tran_refl (fg (f (g y1)))
-        part2 : ap f(ap g(ap f(gf x))) @ fg (f x) ~~ fg(f(g(f x))) @ ap f (gf x)
+        part2 : ap f(ap g(ap f(gf x))) @- fg (f x) ~~ fg(f(g(f x))) @- ap f (gf x)
         part2 = part2g (f x) (f x) (ap f (gf x))
 
 iso_isNormal : Iso a b -> Type
@@ -215,8 +215,8 @@ isodeep1 (iso f g gf fg) x (f x) refl = gf x
 
 isodeep2 : (i:Iso a b) -> (iso_isNormal i) ->
            (x:a) -> (y:b) -> (p : isof i x ~~ y) ->
-           (isofg i y ~~ ap (isof i) (isodeep1 i x y p) @ p)
-isodeep2 (iso f g gf fg) n x (f x) refl = n x @ tran_refl (ap f (gf x))
+           (isofg i y ~~ ap (isof i) (isodeep1 i x y p) @- p)
+isodeep2 (iso f g gf fg) n x (f x) refl = n x @- tran_refl (ap f (gf x))
 
 eq_to_iso : (t1 ~= t2) -> Iso t1 t2
 eq_to_iso q = iso (eqf q) (eqg q) (eqgf q) (eqfg q) 
@@ -247,12 +247,12 @@ haefgf (hae f g gf fg fgf) = fgf
 iso_to_hae : Iso a b -> HAE a b
 iso_to_hae (iso f g gf fg) = (hae f g gf fg' fgf')
   where fg' : (y:b) -> f (g y) ~~ y
-        fg' y = symm (fg (f (g y))) @ ap f (gf (g y)) @ fg y
+        fg' y = symm (fg (f (g y))) @- ap f (gf (g y)) @- fg y
         fgf1 : (p1:t1~~t2) -> (p2:t1~~t3) -> (p3:t3~~t4) -> (p4:t2~~t4) ->
-               (p2 @ p3 ~~ p1 @ p4) -> (symm p1 @ p2 @ p3 ~~ p4)
+               (p2 @- p3 ~~ p1 @- p4) -> (symm p1 @- p2 @- p3 ~~ p4)
         fgf1 refl p2 p3 p4 q = q
-        fgf2 : (x:a) -> ap f (gf (g (f x))) @ fg (f x)
-                     ~~ fg (f (g (f x))) @ ap f (gf x)
+        fgf2 : (x:a) -> ap f (gf (g (f x))) @- fg (f x)
+                     ~~ fg (f (g (f x))) @- ap f (gf x)
         fgf2 x = iso_fgfgf f g gf fg x
         fgf' : (x:a) -> fg' (f x) ~~ ap f (gf x)
         fgf' x = fgf1 _ _ _ _ (fgf2 x)
@@ -309,7 +309,7 @@ rw_path : (p : a ~~ b) -> (x:a) -> (rw p x ~~ eqf (path_to_eq p) x)
 rw_path refl x = refl
 
 rw_eqpath : (e : a ~= b) -> (x:a) -> (rw (eq_to_path e) x ~~ eqf e x)
-rw_eqpath e x = part1 @ part2
+rw_eqpath e x = part1 @- part2
   where part1 : rw (eq_to_path e) x ~~ eqf (path_to_eq (eq_to_path e)) x
         part1 = rw_path (eq_to_path e) x
         part2 : eqf (path_to_eq (eq_to_path e)) x ~~ eqf e x
