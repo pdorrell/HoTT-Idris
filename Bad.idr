@@ -3,17 +3,17 @@ module Hott.Bad
 import Hott
 
 upgrade : a ~~ b -> a = b
-upgrade refl = Refl
+upgrade Reffl = Refl
 
 super_upgrade : (p : a ~~ b) -> (rw p x ~~ y) -> x = y
-super_upgrade refl refl = Refl
+super_upgrade Reffl Reffl = Refl
 
 not_not : (x:Bool) -> not (not x) ~~ x
 not_not False = refl_ False
 not_not True = refl_ True
 
 not_iso : Iso Bool Bool
-not_iso = iso not not not_not not_not
+not_iso = MkIso not not not_not not_not
 
 not_eq : Bool ~= Bool
 not_eq = iso_to_eq not_iso
