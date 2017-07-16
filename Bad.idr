@@ -21,7 +21,7 @@ not_eq = iso_to_eq not_iso
 not_path : Bool ~~ Bool
 not_path = eq_to_path not_eq
 
-rw_not_True : rw not_path True ~~ False
+rw_not_True : rw Hott.Bad.not_path True ~~ False
 rw_not_True = rw_eqpath not_eq True
 
 True_is_False : True = False
