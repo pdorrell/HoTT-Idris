@@ -28,7 +28,7 @@ rw_not_True = rw_eqpath not_eq True
 True_is_False : True = False
 True_is_False = super_upgrade not_path rw_not_True
 
-instance Uninhabited (True = False) where
+implementation Uninhabited (True = False) where
   uninhabited p = uninhabited (replace p Oh)
 
 contradiction : a
