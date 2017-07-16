@@ -1,6 +1,7 @@
 
 module Hott.Bad
 import Hott
+import Data.So
 
 upgrade : a ~~ b -> a = b
 upgrade Reffl = Refl
