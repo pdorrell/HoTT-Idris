@@ -17,7 +17,6 @@ module Hott
 %access public export
 
 infix 40 ~~
-infix 40 ~=
 
 postulate (~~) : t -> t -> Type
 
