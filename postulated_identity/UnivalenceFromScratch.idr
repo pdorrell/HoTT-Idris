@@ -13,6 +13,10 @@ postulate J : (P : (a,b:t) -> (a~~b) -> Type) ->
     ((a:t) -> P a a (refl_ a)) ->
     ((a,b:t) -> (p:a~~b) -> P a b p)
     
+postulate J_refl : (P : (a,b:t) -> (a~~b) -> Type) ->
+    (p_for_refl: (a:t) -> P a a (refl_ a)) -> 
+    (a: t) -> J P p_for_refl a a (refl_ a) ~~ p_for_refl a
+    
 -- cf the pattern-matching version with a constructor (as in Hott.idr & K.idr):
 
 --  data (~~) : t -> t -> Type where
