@@ -1,6 +1,6 @@
-
 module UnivalenceFromScratch
 
+%default total
 %access public export
 infix 40 ~~
 
