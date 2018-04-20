@@ -55,6 +55,15 @@ dpair_eq_lemma {t} {P} {x} {y1} {y2} x_y1_eq_x_y2 =
   let x_y1_native_eq_x_y2 = eq_implies_native_eq {t = DPair t P} {x=(x**y1)} {y=(x**y2)} x_y1_eq_x_y2
       y1_native_eq_y2 = dpair_lemma x_y1_native_eq_x_y2
   in native_eq_implies_eq y1_native_eq_y2
+  
+intro_dpair_lemma : {t : Type} -> {P : t -> Type} -> {x : t} -> {y1, y2 : P x} -> y1 = y2 -> (x ** y1) = (x ** y2)
+intro_dpair_lemma {P = P} {x = x} {y1 = y2} {y2 = y2} Refl = Refl
+
+intro_dpair_eq_lemma : {t : Type} -> {P : t -> Type} -> {x : t} -> {y1, y2 : P x} -> y1 ~~ y2 -> (x ** y1) ~~ (x ** y2)
+intro_dpair_eq_lemma {t} {P} {x} {y1} {y2} y1_eq_y2 = 
+  let y1_native_eq_y2 = eq_implies_native_eq {t = P x} {x=y1} {y=y2} y1_eq_y2
+      x_y1_native_eq_x_y2 = intro_dpair_lemma {P} {x} {y1} {y2} y1_native_eq_y2
+  in native_eq_implies_eq x_y1_native_eq_x_y2
 
 -- Direct proofs of symm & tran & congg and transport (or we could have gone via the 'native_eq' lemmas ...)
  
@@ -161,8 +170,7 @@ id_to_eq = J A f
 
     f : (xt : Type) -> equivalences xt xt
     f xt = (id_ xt ** id_is_equiv xt)
-
-
+    
 -- Finally, we can postulate Univalence
 --
 -- (Note: Universes are implicit in Idris, so we can't say "The Universe U is Univalent")
@@ -207,4 +215,67 @@ K P h a p =
        refl_a_eq_p = the ((refl_ a) ~~ p) $ symm p_eq_refl_a
    in transport (refl_ a) p refl_a_eq_p (P a) h_of_a
 
--- TODO show contradiction of K and Univalence ...
+-- Show Bool.not to be an equivalence, which leads to a contradiction ...
+
+not_is_an_equivalence : is_equivalence Bool.not
+not_is_an_equivalence False = ((True ** refl_ False) ** false_lemma)
+  where
+    false_lemma : (x : (x1 : Bool ** ((not x1) ~~ False))) -> ((True ** refl_ False) ~~ x)
+    false_lemma (True ** not_true_eq_false) = 
+       let e1 = the ((refl_ False) ~~ not_true_eq_false) $ UIP {a=False} {b=False} (refl_ False) not_true_eq_false
+       in intro_dpair_eq_lemma {x=True} e1
+    false_lemma (False ** not_false_eq_false) = absurd $ eq_implies_native_eq not_false_eq_false
+not_is_an_equivalence True = ((False ** refl_ True) ** true_lemma)
+  where
+    true_lemma : (x : (x1 : Bool ** ((not x1) ~~ True))) -> ((False ** refl_ True) ~~ x) 
+    true_lemma (False ** not_false_eq_true) = 
+       let e1 = the ((refl_ True) ~~ not_false_eq_true) $ UIP {a=True} {b=True} (refl_ True) not_false_eq_true
+       in intro_dpair_eq_lemma {x=False} e1
+    true_lemma (True ** not_true_eq_true) = absurd $ sym $ eq_implies_native_eq not_true_eq_true
+    
+BoolEquivalences : Type
+BoolEquivalences = equivalences Bool Bool
+
+Id_to_eq_bool_bool :  Bool ~~ Bool -> BoolEquivalences
+Id_to_eq_bool_bool = id_to_eq Bool Bool
+    
+univalence_bool_bool : is_equivalence Id_to_eq_bool_bool
+univalence_bool_bool = univalence Bool Bool
+
+Bool_id_equivalence : BoolEquivalences
+Bool_id_equivalence = (id ** id_is_equiv Bool)
+    
+bool_id_fiber_is_singleton : is_singleton (fiber Id_to_eq_bool_bool Bool_id_equivalence)
+bool_id_fiber_is_singleton = univalence_bool_bool Bool_id_equivalence
+
+id_path_and_uniqueness : (id_path : (Bool ~~ Bool) ** Id_to_eq_bool_bool id_path ~~ Bool_id_equivalence)
+id_path_and_uniqueness = fst bool_id_fiber_is_singleton
+
+
+Bool_not_equivalence : BoolEquivalences
+Bool_not_equivalence = (Bool.not ** not_is_an_equivalence)
+
+bool_not_fiber_is_singleton : is_singleton (fiber Id_to_eq_bool_bool Bool_not_equivalence)
+bool_not_fiber_is_singleton = univalence_bool_bool Bool_not_equivalence
+
+not_path_and_uniqueness : (not_path : (Bool ~~ Bool) ** Id_to_eq_bool_bool not_path ~~ Bool_not_equivalence)
+not_path_and_uniqueness = fst bool_not_fiber_is_singleton
+
+id_eq_not : Basics.id ~~ Bool.not
+id_eq_not = 
+   let (id_path ** id_path_uniqueness) = id_path_and_uniqueness
+       id_path_maps_to_id_equiv = the (Id_to_eq_bool_bool id_path ~~ Bool_id_equivalence) id_path_uniqueness
+       (not_path ** not_path_uniqueness) = not_path_and_uniqueness
+       not_path_maps_to_not_equiv = the (Id_to_eq_bool_bool not_path ~~ Bool_not_equivalence) not_path_uniqueness
+       id_path_eq_not_path = the (id_path ~~ not_path) $ UIP id_path not_path
+       e1 = the (Id_to_eq_bool_bool id_path ~~ Id_to_eq_bool_bool not_path) 
+                         $ congg {f=Id_to_eq_bool_bool} id_path_eq_not_path
+       e2 = the (Bool_id_equivalence ~~ Bool_not_equivalence) 
+                         $ tran (tran (symm id_path_maps_to_id_equiv) e1) not_path_maps_to_not_equiv
+   in congg {f=DPair.fst} e2
+
+contradiction : Void
+contradiction = 
+  let e1 = the (Basics.id = Bool.not) $ eq_implies_native_eq id_eq_not
+      e2 = the (True = False) $ cong {f = \fun => fun True} e1
+  in absurd e2
