@@ -48,7 +48,7 @@ is_singleton : (t : Type) -> Type
 is_singleton t = (c : t ** ((x : t) -> c ~~ x))
 
 fiber : {xt : Type} -> {yt : Type} -> (f : xt -> yt) -> (y : yt) -> Type
-fiber {xt} {yt} f y = (x : xt ** f(x) ~~ y)
+fiber {xt} {yt} f y = (x : xt ** f x ~~ y)
 
 is_equivalence : {xt : Type} -> {yt : Type} -> (f : xt -> yt) -> Type
 is_equivalence {xt} {yt} f = (y : yt) -> is_singleton (fiber f y)
@@ -59,22 +59,22 @@ equivalences xt yt = (f : (xt -> yt) ** is_equivalence f)
 singleton_type : {xt : Type} -> (x : xt) -> Type
 singleton_type {xt} x = (y : xt ** y ~~ x)
 
-nu : {xt : Type} -> (x : xt) -> singleton_type(x)
+nu : {xt : Type} -> (x : xt) -> singleton_type x
 nu x = (x ** refl_ x)
 
-phi : {xt : Type} -> (y, x : xt) -> (p : y ~~ x) -> nu(x) ~~ (y ** p)
+phi : {xt : Type} -> (y, x : xt) -> (p : y ~~ x) -> nu x ~~ (y ** p)
 phi = J A f
   where
     A : {xt : Type} -> (y : xt) -> (x : xt) -> (p : y ~~ x) -> Type
-    A y x p = nu(x) ~~ (y ** p)
+    A y x p = nu x ~~ (y ** p)
 
     f : {xt : Type} -> (x : xt) -> A x x (refl_ x)
-    f x = refl_(nu(x))
+    f x = refl_ (nu x)
     
-g : {xt : Type} -> (x : xt) -> (sigma : singleton_type(x)) -> (nu x ~~ sigma)
+g : {xt : Type} -> (x : xt) -> (sigma : singleton_type x) -> (nu x ~~ sigma)
 g x (y ** p) = phi y x p
 
-h : {xt : Type} -> (x : xt) -> (c : singleton_type(x) ** ((sigma : singleton_type x) -> c ~~ sigma))
+h : {xt : Type} -> (x : xt) -> (c : singleton_type x ** ((sigma : singleton_type x) -> c ~~ sigma))
 h x = (nu x ** g x)
 
 singleton_types_are_singletons: {xt : Type} -> (x : xt) -> is_singleton (singleton_type x)
