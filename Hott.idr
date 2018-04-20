@@ -285,35 +285,35 @@ eq_tran e1 e2 = iso_to_eq (iso_tran (eq_to_iso e1) (eq_to_iso e2))
 -- Univalence --
 ----------------
 
-path_to_eq : (a ~~ b) -> (a ~= b)
-path_to_eq Reffl = eq_refl
+Path_to_eq : (a ~~ b) -> (a ~= b)
+Path_to_eq Reffl = eq_refl
 
-univalence : isEquiv path_to_eq
+univalence : isEquiv Path_to_eq
 univalence = ?univalence_axiom
 
 univalence_eq : (a ~~ b) ~= (a ~= b)
-univalence_eq = MkEquiv path_to_eq univalence
+univalence_eq = MkEquiv Path_to_eq univalence
 
 eq_to_path : (a ~= b) -> (a ~~ b)
 eq_to_path = eqg univalence_eq
 
-eq_to_path_to_eq : (e : a ~= b) -> path_to_eq (eq_to_path e) ~~ e
+eq_to_path_to_eq : (e : a ~= b) -> Path_to_eq (eq_to_path e) ~~ e
 eq_to_path_to_eq = eqfg univalence_eq
 
-path_to_eq_to_path : (p : a ~~ b) -> eq_to_path (path_to_eq p) ~~ p
+path_to_eq_to_path : (p : a ~~ b) -> eq_to_path (Path_to_eq p) ~~ p
 path_to_eq_to_path = eqgf univalence_eq
 
 univalence_path : (a ~~ b) ~~ (a ~= b)
 univalence_path = eq_to_path univalence_eq
 
-rw_path : (p : a ~~ b) -> (x:a) -> (rw p x ~~ eqf (path_to_eq p) x)
+rw_path : (p : a ~~ b) -> (x:a) -> (rw p x ~~ eqf (Path_to_eq p) x)
 rw_path Reffl x = Reffl
 
 rw_eqpath : (e : a ~= b) -> (x:a) -> (rw (eq_to_path e) x ~~ eqf e x)
 rw_eqpath e x = part1 @- part2
-  where part1 : rw (eq_to_path e) x ~~ eqf (path_to_eq (eq_to_path e)) x
+  where part1 : rw (eq_to_path e) x ~~ eqf (Path_to_eq (eq_to_path e)) x
         part1 = rw_path (eq_to_path e) x
-        part2 : eqf (path_to_eq (eq_to_path e)) x ~~ eqf e x
+        part2 : eqf (Path_to_eq (eq_to_path e)) x ~~ eqf e x
         part2 = ap (\e' => eqf e' x) (eq_to_path_to_eq e)
 
 iso_to_path : Iso a b -> (a ~~ b)
@@ -326,5 +326,3 @@ iso_to_path = eq_to_path . iso_to_eq
 -- TODO: Prove funext from univalence.
 -- funext : (f:a->b) -> (g:a->b) -> ((x:a) -> (f x ~~ g x)) -> (f ~~ g)
 -- funext = ?funext_axiom
-
-
